@@ -8,58 +8,63 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  profile       Profile?
-  accounts      Account[]
-  sessions      Session[]
-  likesFrom     Like[]    @relation("likes_from")
-  likesTo       Like[]    @relation("likes_to")
-  matchesA      Match[]   @relation("matches_a")
-  matchesB      Match[]   @relation("matches_b")
-  messages      Message[]
+  profile   Profile?
+  accounts  Account[]
+  sessions  Session[]
+
+  // like/match/message relations
+  likesFrom Like[]   @relation("likes_from")
+  likesTo   Like[]   @relation("likes_to")
+  matchesA  Match[]  @relation("matches_a")
+  matchesB  Match[]  @relation("matches_b")
+  messages  Message[]
 }
 
 model Profile {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  displayName  String
-  city         String?
-  latitude     Float?
-  longitude    Float?
-  dob          DateTime?
-  pronouns     String?
-  genderIdentity String[]
-  orientation    String[]
-  showTo         String[]
-  intent         String?
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  displayName     String
+  city            String?
+  latitude        Float?
+  longitude       Float?
+  dob             DateTime?
+  pronouns        String?
+  genderIdentity  String[]
+  orientation     String[]
+  showTo          String[]
+  intent          String?
+  bio             String?
+  platforms       String[]
+  genres          String[]
+  topGames        String[]
+  playTimes       String[]
+  voicePref       String?
 
-  bio          String?
-  platforms    String[]
-  genres       String[]
-  topGames     String[]
-  playTimes    String[]
-  voicePref    String?
+  // back-relations
+  photos   Media[]
+  prompts  PromptAnswer[]
 
-  photos       Media[]
-  prompts      PromptAnswer[]
-
-  user         User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Media {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
   type      String
   url       String
-  sort      Int     @default(0)
+  sort      Int      @default(0)
   createdAt DateTime @default(now())
 
-  user      User    @relation(fields: [userId], references: [id])
+  // relate to Profile via its unique userId
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
 }
 
 model PromptAnswer {
@@ -68,7 +73,10 @@ model PromptAnswer {
   promptKey String
   answer    String
 
-  user      User    @relation(fields: [userId], references: [id])
+  // relate to Profile via its unique userId
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
 }
 
 model Like {
@@ -77,8 +85,11 @@ model Like {
   toUserId   String
   createdAt  DateTime @default(now())
 
-  fromUser   User     @relation("likes_from", fields: [fromUserId], references: [id])
-  toUser     User     @relation("likes_to", fields: [toUserId], references: [id])
+  fromUser User @relation("likes_from", fields: [fromUserId], references: [id])
+  toUser   User @relation("likes_to",   fields: [toUserId],   references: [id])
+
+  @@index([fromUserId])
+  @@index([toUserId])
 }
 
 model Match {
@@ -87,20 +98,27 @@ model Match {
   userBId   String
   createdAt DateTime @default(now())
 
-  userA     User     @relation("matches_a", fields: [userAId], references: [id])
-  userB     User     @relation("matches_b", fields: [userBId], references: [id])
-  messages  Message[]
+  userA User @relation("matches_a", fields: [userAId], references: [id])
+  userB User @relation("matches_b", fields: [userBId], references: [id])
+
+  messages Message[]
+
+  @@index([userAId])
+  @@index([userBId])
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  matchId   String
+  id         String   @id @default(cuid())
+  matchId    String
   fromUserId String
-  body      String
-  createdAt DateTime @default(now())
+  body       String
+  createdAt  DateTime @default(now())
 
-  match     Match    @relation(fields: [matchId], references: [id])
-  fromUser  User     @relation(fields: [fromUserId], references: [id])
+  match    Match @relation(fields: [matchId], references: [id])
+  fromUser User  @relation(fields: [fromUserId], references: [id])
+
+  @@index([matchId])
+  @@index([fromUserId])
 }
 
 model Account {
@@ -120,6 +138,7 @@ model Account {
   user User @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -129,6 +148,8 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model VerificationToken {
