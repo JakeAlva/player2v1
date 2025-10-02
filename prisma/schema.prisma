@@ -8,28 +8,6 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  profile   Profile?
-  accounts  Account[]
-  sessions  Session[]
-
-  likesFrom Like[]   @relation("likes_from")
-  likesTo   Like[]   @relation("likes_to")
-  matchesA  Match[]  @relation("matches_a")
-  matchesB  Match[]  @relation("matches_b")
-  messages  Message[]
+  id    String @id @default(cuid())
+  email String @unique
 }
-
-model Profile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  displayName     String
-  city            String?
-  latitude        Float?
-  longitude       Float?
-  d
