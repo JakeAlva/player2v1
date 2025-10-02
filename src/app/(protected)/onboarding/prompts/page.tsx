@@ -1,36 +1,71 @@
 'use client';
-import {{ useState }} from 'react';
-import {{ useRouter }} from 'next/navigation';
 
-export default function Step() {{
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function Step() {
   const router = useRouter();
+  const [p1, setP1] = useState('');
+  const [p2, setP2] = useState('');
+  const [p3, setP3] = useState('');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string|null>(null);
-  const [p1, setP1] = useState(''); const [p2, setP2] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const save = async () => {{
-    setSaving(true); setError(null);
-    const res = await fetch('/api/onboarding', {{
-      method: 'POST',
-      headers: {{ 'Content-Type': 'application/json' }},
-      body: JSON.stringify({ step: 'prompts', prompts: [{ key: 'ideal_first_gaming_date', answer: p1 }, { key: 'comfort_game', answer: p2 }] }),
-    }});
-    setSaving(false);
-    if (!res.ok) {{ setError('Failed to save'); return; }}
-    router.push('/(protected)/home');
-  }};
+  const save = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      const res = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 'prompts',
+          prompts: [p1, p2, p3].filter(Boolean),
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      router.push('/'); // go wherever the next step/home is
+    } catch (e: any) {
+      setError(e.message ?? 'Something went wrong');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <main className="py-6 max-w-xl">
-      <h1 className="text-2xl font-bold">Prompts</h1>
-      <div className="mt-6 space-y-3">
-        <textarea className="w-full rounded bg-neutral-800 p-3" placeholder="Ideal first gaming date..." value={p1} onChange={e=>setP1(e.target.value)} />
-<textarea className="w-full rounded bg-neutral-800 p-3" placeholder="My comfort game is..." value={p2} onChange={e=>setP2(e.target.value)} />
-      </div>
-      {{error ? <p className="text-red-400 text-sm mt-2">{{error}}</p> : null}}
-      <div className="mt-6 flex justify-end">
-        <button onClick={{save}} disabled={{saving}} className="rounded bg-indigo-600 px-5 py-3 font-semibold disabled:opacity-60">{{saving?'Saving...':'Continue'}}</button>
-      </div>
-    </main>
+    <div style={{ maxWidth: 520, margin: '40px auto', padding: 16 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 12 }}>
+        Prompts
+      </h1>
+
+      <label>Prompt 1</label>
+      <input
+        value={p1}
+        onChange={(e) => setP1(e.target.value)}
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+
+      <label>Prompt 2</label>
+      <input
+        value={p2}
+        onChange={(e) => setP2(e.target.value)}
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+
+      <label>Prompt 3</label>
+      <input
+        value={p3}
+        onChange={(e) => setP3(e.target.value)}
+        style={{ width: '100%', marginBottom: 16 }}
+      />
+
+      {error && (
+        <div style={{ color: 'crimson', marginBottom: 12 }}>{error}</div>
+      )}
+
+      <button onClick={save} disabled={saving}>
+        {saving ? 'Saving…' : 'Save & Continue'}
+      </button>
+    </div>
   );
-}}
+}
