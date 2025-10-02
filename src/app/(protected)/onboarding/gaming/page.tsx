@@ -1,42 +1,76 @@
 'use client';
+
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
-export default function Step() {
-  const router = useRouter();
+export default function StepGaming() {
+  const [platforms, setPlatforms] = useState<string>('');
+  const [genres, setGenres] = useState<string>('');
+  const [topGames, setTopGames] = useState<string>('');
+  const [voicePref, setVoicePref] = useState<string>('text');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string|null>(null);
-  const [platforms, setPlatforms] = useState(''); const [genres, setGenres] = useState(''); const [topGames, setTopGames] = useState(''); const [voicePref, setVoicePref] = useState('Sometimes');
+  const [error, setError] = useState<string | null>(null);
 
-  const save = async () => {{
-    setSaving(true); setError(null);
-    const res = await fetch('/api/onboarding', {{
-      method: 'POST',
-      headers: {{ 'Content-Type': 'application/json' }},
-      body: JSON.stringify({ step: 'gaming', platforms, genres, topGames, voicePref }),
-    }});
-    setSaving(false);
-    if (!res.ok) {{ setError('Failed to save'); return; }}
-    router.push('/(protected)/onboarding/photos');
-  }};
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 'gaming',
+          platforms,
+          genres,
+          topGames,
+          voicePref,
+        }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      alert('Saved gaming!');
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <main className="py-6 max-w-xl">
-      <h1 className="text-2xl font-bold">Gaming Profile</h1>
-      <div className="mt-6 space-y-3">
-        <input className="w-full rounded bg-neutral-800 p-3" placeholder="Platforms (PC, PlayStation, Xbox, Switch, Mobile; comma-separated)" value={platforms} onChange={e=>setPlatforms(e.target.value)} />
-<input className="w-full rounded bg-neutral-800 p-3" placeholder="Genres (RPG, FPS, MMO, Co-op, etc.; comma-separated)" value={genres} onChange={e=>setGenres(e.target.value)} />
-<input className="w-full rounded bg-neutral-800 p-3" placeholder="Top games (comma-separated)" value={topGames} onChange={e=>setTopGames(e.target.value)} />
-<select className="w-full rounded bg-neutral-800 p-3" value={voicePref} onChange={e=>setVoicePref(e.target.value)}>
-  <option>Always</option>
-  <option>Sometimes</option>
-  <option>Text only</option>
-</select>
-      </div>
-      {{error ? <p className="text-red-400 text-sm mt-2">{{error}}</p> : null}}
-      <div className="mt-6 flex justify-end">
-        <button onClick={{save}} disabled={{saving}} className="rounded bg-indigo-600 px-5 py-3 font-semibold disabled:opacity-60">{{saving?'Saving...':'Continue'}}</button>
-      </div>
-    </main>
+    <div className="max-w-lg space-y-3">
+      <h1 className="text-2xl font-semibold">Gaming</h1>
+      <input
+        className="border p-2 w-full"
+        placeholder="Platforms (comma separated)"
+        value={platforms}
+        onChange={(e) => setPlatforms(e.target.value)}
+      />
+      <input
+        className="border p-2 w-full"
+        placeholder="Favorite genres (comma separated)"
+        value={genres}
+        onChange={(e) => setGenres(e.target.value)}
+      />
+      <input
+        className="border p-2 w-full"
+        placeholder="Top games (comma separated)"
+        value={topGames}
+        onChange={(e) => setTopGames(e.target.value)}
+      />
+      <select
+        className="border p-2 w-full"
+        value={voicePref}
+        onChange={(e) => setVoicePref(e.target.value)}
+      >
+        <option value="text">Text Only</option>
+        <option value="voice">Voice OK</option>
+      </select>
+      {error && <p className="text-red-500">{error}</p>}
+      <button
+        onClick={save}
+        disabled={saving}
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        {saving ? 'Saving…' : 'Save & Continue'}
+      </button>
+    </div>
   );
-}}
+}
