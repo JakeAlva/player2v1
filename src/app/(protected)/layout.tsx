@@ -1,11 +1,15 @@
-import Nav from "@/components/Nav";
-import React from "react";
+import React from 'react';
+import Nav from '../../components/Nav'; // <-- use relative path (no @ alias)
 
-export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+export default function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <Nav />
-      <div className="mx-auto max-w-4xl p-4">{children}</div>
+      <main className="p-6">{children}</main>
     </div>
   );
 }
