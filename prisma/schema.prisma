@@ -18,7 +18,7 @@ model User {
   accounts  Account[]
   sessions  Session[]
 
-  // like/match/message relations
+  // social graph
   likesFrom Like[]   @relation("likes_from")
   likesTo   Like[]   @relation("likes_to")
   matchesA  Match[]  @relation("matches_a")
@@ -46,7 +46,7 @@ model Profile {
   playTimes       String[]
   voicePref       String?
 
-  // back-relations
+  // back-relations to Media and PromptAnswer (these are what Prisma was asking for)
   photos   Media[]
   prompts  PromptAnswer[]
 
@@ -61,7 +61,7 @@ model Media {
   sort      Int      @default(0)
   createdAt DateTime @default(now())
 
-  // relate to Profile via its unique userId
+  // Link to Profile (NOT User) via Profile.userId (which is unique)
   profile Profile @relation(fields: [userId], references: [userId])
 
   @@index([userId])
@@ -73,7 +73,7 @@ model PromptAnswer {
   promptKey String
   answer    String
 
-  // relate to Profile via its unique userId
+  // Link to Profile (NOT User) via Profile.userId
   profile Profile @relation(fields: [userId], references: [userId])
 
   @@index([userId])
