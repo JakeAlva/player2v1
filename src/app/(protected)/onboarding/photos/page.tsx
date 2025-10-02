@@ -1,38 +1,62 @@
 'use client';
+
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
-export default function Step() {
-  const router = useRouter();
+export default function StepPhotos() {
+  const [photo1, setPhoto1] = useState('');
+  const [photo2, setPhoto2] = useState('');
+  const [showcase, setShowcase] = useState('');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string|null>(null);
-  const [photo1, setP1] = useState(''); const [photo2, setP2] = useState(''); const [showcase, setShow] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const save = async () => {{
-    setSaving(true); setError(null);
-    const res = await fetch('/api/onboarding', {{
-      method: 'POST',
-      headers: {{ 'Content-Type': 'application/json' }},
-      body: JSON.stringify({ step: 'photos', photos: [photo1, photo2].filter(Boolean), showcase }),
-    }});
-    setSaving(false);
-    if (!res.ok) {{ setError('Failed to save'); return; }}
-    router.push('/(protected)/onboarding/prompts');
-  }};
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const photos = [photo1, photo2].filter(Boolean);
+      const res = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step: 'photos', photos, showcase }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      alert('Saved photos!');
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <main className="py-6 max-w-xl">
-      <h1 className="text-2xl font-bold">Photos & Media (URLs for MVP)</h1>
-      <div className="mt-6 space-y-3">
-        <input className="w-full rounded bg-neutral-800 p-3" placeholder="Photo URL #1" value={photo1} onChange={e=>setP1(e.target.value)} />
-<input className="w-full rounded bg-neutral-800 p-3" placeholder="Photo URL #2" value={photo2} onChange={e=>setP2(e.target.value)} />
-<input className="w-full rounded bg-neutral-800 p-3" placeholder="Showcase URL (optional: Twitch/YouTube clip)" value={showcase} onChange={e=>setShow(e.target.value)} />
-<p className="text-sm text-neutral-400">Tip: You can host images on Imgur/Cloudinary now. We can add Supabase Storage later.</p>
-      </div>
-      {{error ? <p className="text-red-400 text-sm mt-2">{{error}}</p> : null}}
-      <div className="mt-6 flex justify-end">
-        <button onClick={{save}} disabled={{saving}} className="rounded bg-indigo-600 px-5 py-3 font-semibold disabled:opacity-60">{{saving?'Saving...':'Continue'}}</button>
-      </div>
-    </main>
+    <div className="max-w-lg space-y-3">
+      <h1 className="text-2xl font-semibold">Photos</h1>
+      <input
+        className="border p-2 w-full"
+        placeholder="Photo URL #1"
+        value={photo1}
+        onChange={(e) => setPhoto1(e.target.value)}
+      />
+      <input
+        className="border p-2 w-full"
+        placeholder="Photo URL #2"
+        value={photo2}
+        onChange={(e) => setPhoto2(e.target.value)}
+      />
+      <input
+        className="border p-2 w-full"
+        placeholder="Showcase caption"
+        value={showcase}
+        onChange={(e) => setShowcase(e.target.value)}
+      />
+      {error && <p className="text-red-500">{error}</p>}
+      <button
+        onClick={save}
+        disabled={saving}
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        {saving ? 'Saving…' : 'Save & Finish'}
+      </button>
+    </div>
   );
-}}
+}
