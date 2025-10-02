@@ -1,8 +1,8 @@
 'use client';
-import {{ useState }} from 'react';
-import {{ useRouter }} from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Step() {{
+export default function Step() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string|null>(null);
